@@ -22,6 +22,7 @@ public class BalanceCalculator {
         return balances;
     }
 
+
     public static boolean hasDebts(Map<String, Double> balances) {
         for (double balance : balances.values()) {
             if (balance < 0) return true;
@@ -29,8 +30,10 @@ public class BalanceCalculator {
         return false;
     }
 
-    public static void settleExpenses1(Map<String, Double> netBalances) {
+
+    public static List<ExpenseSettlement> settleExpenses(Map<String, Double> netBalances) {
         Map<String, Double> balances = new HashMap<>(netBalances);
+        List<ExpenseSettlement> settlements = new ArrayList<>();
 
         boolean hasUnsettledExpense = true;
 
@@ -49,43 +52,7 @@ public class BalanceCalculator {
 
                     double amount = Math.min(-debt, credit);
 
-                    System.out.printf("%s pays %s %.2f%n", debtor, creditor, amount);
-
-                    balances.put(debtor, debt + amount);
-                    balances.put(creditor, credit - amount);
-
-                    hasUnsettledExpense = true;
-                    break;
-                }
-
-                if (hasUnsettledExpense) break;
-            }
-        }
-    }
-
-
-    public static List<String> settleExpenses(Map<String, Double> netBalances) {
-        Map<String, Double> balances = new HashMap<>(netBalances);
-        List<String> settlements = new ArrayList<>();
-
-        boolean hasUnsettledExpense = true;
-
-        while (hasUnsettledExpense) {
-            hasUnsettledExpense = false;
-
-            for (String debtor : balances.keySet()) {
-                double debt = balances.get(debtor);
-                if (debt >= 0) continue;
-
-                for (String creditor : balances.keySet()) {
-                    if (debtor.equals(creditor)) continue;
-
-                    double credit = balances.get(creditor);
-                    if (credit <= 0) continue;
-
-                    double amount = Math.min(-debt, credit);
-
-                    settlements.add(String.format("%s pays %s %.2f", debtor, creditor, amount));
+                    settlements.add(new ExpenseSettlement(debtor, creditor, amount));
 
                     balances.put(debtor, debt + amount);
                     balances.put(creditor, credit - amount);
@@ -101,15 +68,11 @@ public class BalanceCalculator {
         return settlements;
     }
 
-    public static void printSettlements(List<String> settlements) {
-        if (settlements.isEmpty()) {
-            System.out.println("No transactions needed. Everyone is settled up!");
-        } else {
-            for (String s : settlements) {
-                System.out.println(s);
-            }
+    public static void printSettlements(List<ExpenseSettlement> settlements) {
+        System.out.println("List of transactions -");
+        for (ExpenseSettlement s : settlements) {
+            System.out.println(s);
         }
     }
-
 
 }
