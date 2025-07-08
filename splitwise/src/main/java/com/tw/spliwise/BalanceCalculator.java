@@ -1,5 +1,6 @@
 package com.tw.spliwise;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class BalanceCalculator {
         return false;
     }
 
-    public static void settleExpenses(Map<String, Double> netBalances) {
+    public static void settleExpenses1(Map<String, Double> netBalances) {
         Map<String, Double> balances = new HashMap<>(netBalances);
 
         boolean hasUnsettledExpense = true;
@@ -61,4 +62,54 @@ public class BalanceCalculator {
             }
         }
     }
+
+
+    public static List<String> settleExpenses(Map<String, Double> netBalances) {
+        Map<String, Double> balances = new HashMap<>(netBalances);
+        List<String> settlements = new ArrayList<>();
+
+        boolean hasUnsettledExpense = true;
+
+        while (hasUnsettledExpense) {
+            hasUnsettledExpense = false;
+
+            for (String debtor : balances.keySet()) {
+                double debt = balances.get(debtor);
+                if (debt >= 0) continue;
+
+                for (String creditor : balances.keySet()) {
+                    if (debtor.equals(creditor)) continue;
+
+                    double credit = balances.get(creditor);
+                    if (credit <= 0) continue;
+
+                    double amount = Math.min(-debt, credit);
+
+                    settlements.add(String.format("%s pays %s %.2f", debtor, creditor, amount));
+
+                    balances.put(debtor, debt + amount);
+                    balances.put(creditor, credit - amount);
+
+                    hasUnsettledExpense = true;
+                    break;
+                }
+
+                if (hasUnsettledExpense) break;
+            }
+        }
+
+        return settlements;
+    }
+
+    public static void printSettlements(List<String> settlements) {
+        if (settlements.isEmpty()) {
+            System.out.println("No transactions needed. Everyone is settled up!");
+        } else {
+            for (String s : settlements) {
+                System.out.println(s);
+            }
+        }
+    }
+
+
 }
